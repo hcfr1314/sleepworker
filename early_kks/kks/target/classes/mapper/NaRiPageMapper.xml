@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hhgs.kks.mapper.NaRiPageMapper">
+
+    <select id="getNaRiDataFromRownum"  resultType="java.util.HashMap">
+        select * from ( select ROWNUM rn, t.* from
+        (select ID,DESCRIPT,t1.LCUID from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name = #{scheduler_name}
+        union all select ID,DESCRIPT,t1.LCUID from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name =  #{scheduler_name}) t
+        WHERE ROWNUM <![CDATA[<=]]> #{startRownum} ) where rn > #{endRownum}
+
+    </select>
+
+</mapper>

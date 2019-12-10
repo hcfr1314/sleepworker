@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hhgs.kks.mapper.NaRiDataMapper">
+    <select id="selectFromDescript" resultType="java.util.HashMap">
+        select ID,DESCRIPT from YC union all select ID,DESCRIPT from YX
+    </select>
+
+
+    <select id="getNaRiDataFromScheduler" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select ID,DESCRIPT,t1.LCUID from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name = #{scheduler_name}
+         union all select ID,DESCRIPT,t1.LCUID from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name =  #{scheduler_name}
+    </select>
+
+    <select id="getNaRiDataFromRownum"  resultType="java.util.HashMap">
+select * from ( select ROWNUM rn, t.* from
+        (select ID,DESCRIPT,t1.LCUID from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name = #{scheduler_name}
+        union all select ID,DESCRIPT,t1.LCUID from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name =  #{scheduler_name}) t
+        WHERE ROWNUM <![CDATA[<=]]> #{startRownum} ) where rn > #{endRownum}
+
+    </select>
+
+    <select id="getNaRiDataWithColumnList" parameterType="java.util.List" resultType="java.util.HashMap">
+        select
+        <if test="fields != null and fields.size>0">
+        <foreach collection="fields" index="index" item="item" separator=",">#{item}</foreach>
+        </if>
+        from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name = #{scheduler_name}
+        union all select ID,DESCRIPT from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name =  #{scheduler_name}
+    </select>
+
+    <select id="getYXDataWithScheduler" parameterType="java.lang.String" resultType="java.util.HashMap">
+     select * from YX t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name = #{scheduler_name}
+    </select>
+
+    <select id="getYCDataWithScheduler" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select * from YC t1,LCU_EQUIPMENT t2 where t1.lcuid = t2.lcuid and t2.scheduler_name = #{scheduler_name}
+    </select>
+</mapper>
