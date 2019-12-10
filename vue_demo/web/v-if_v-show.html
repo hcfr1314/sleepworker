@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>v-if与v-show</title>
+    <script src="js/vuejs-2.5.16.js"></script>
+
+</head>
+<body>
+    <div id="app">
+        <span v-if="flag">周杰伦</span>
+        <span v-show="flag">林俊杰</span>
+        <button  @click="toggle">切换</button>
+    </div>
+
+    <script>
+        new Vue({
+            el:"#app",
+            data:{
+                flag:false
+            },
+            methods:{
+                toggle:function () {
+                    this.flag=!this.flag;
+                }
+            }
+        });
+
+    </script>
+
+</body>
+</html>
