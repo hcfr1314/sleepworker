@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huanghe.alarm.api.mapper.huanghe.AlarmbasicMapper">
+
+    <sql id="common">
+        ID AS orgId,
+        ALARM_NAME AS alarmName,
+        GLOBAL_NUMBER AS globalCode,
+        DEVICE_PATH AS devicePath,
+        DEVICE_NAME AS deviceName,
+        PLANT_NAME AS plantName,
+        SIGN_TYPE AS signalType,
+        ALARM_CODE AS alarmCode,
+        ALARM_LEVEL AS alarmLevel,
+        ALARM_CLASS AS alarmClass,
+        ALARM_COLOR AS alarmColor,
+        POINT_STATUS AS pointStatus,
+        EFFECTIVENESS AS effectiveness,
+        PLANT_TYPE AS plantType,
+        DESCRIPT  AS descript,
+        CREATE_TIME AS CREATE_TIME,
+        MODIFY_TIME AS modifyTime
+    </sql>
+
+    <resultMap id="BaseResultMap" type="com.huanghe.alarm.api.model.AlarmDefinition">
+        <id column="ID" jdbcType="VARCHAR" property="orgId"/>
+        <result column="ALARM_NAME" jdbcType="VARCHAR" property="alarmName"/>
+        <result column="GLOBAL_NUMBER" jdbcType="VARCHAR" property="globalCode"/>
+        <result column="DEVICE_PATH" jdbcType="VARCHAR" property="devicePath"/>
+        <result column="DESCRIPT" jdbcType="VARCHAR" property="descript"/>
+        <result column="DEVICE_NAME" jdbcType="VARCHAR" property="deviceName"/>
+        <result column="PLANT_NAME" jdbcType="VARCHAR" property="plantName"/>
+        <result column="SIGN_TYPE" jdbcType="VARCHAR" property="signalType"/>
+        <result column="ALARM_CODE" jdbcType="TIMESTAMP" property="alarmCode"/>
+        <result column="ALARM_LEVEL" jdbcType="VARCHAR" property="alarmLevel"/>
+        <result column="ALARM_CLASS" jdbcType="VARCHAR" property="alarmClass"/>
+        <result column="ALARM_COLOR" jdbcType="VARCHAR" property="alarmColor"/>
+        <result column="ALARM_TAG" jdbcType="VARCHAR" property="alarmTag"/>
+        <result column="POINT_STATUS" jdbcType="VARCHAR" property="pointStatus"/>
+        <result column="EFFECTIVENESS" jdbcType="VARCHAR" property="effectiveness"/>
+        <result column="PLANT_TYPE" jdbcType="VARCHAR" property="plantType"/>
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="CREATE_TIME"/>
+        <result column="MODIFY_TIME" jdbcType="TIMESTAMP" property="modifyTime"/>
+    </resultMap>
+
+    <select id="queryAllId" resultType="java.lang.String">
+        select ID from ALARM_BASIC
+    </select>
+
+    <select id="selectPointStatus" parameterType="java.lang.String">
+        select pointStatus from ALARM_BASIC where orgId = #{orgId}
+    </select>
+
+    <update id="batchUpdateByOrgId" parameterType="java.util.List">
+        <foreach collection="alarmDefinitionList" item="item" index="index" open="begin" close=";end;" separator=";">
+            update ALARM_BASIC set
+            <trim suffixOverrides=",">
+                <if test="item.alarmName!=null and item.alarmName!=''">
+                    ALARM_NAME = #{item.alarmName,jdbcType=VARCHAR},
+                </if>
+
+                <if test="item.pointStatus!=null and item.pointStatus!=''">
+                    POINT_STATUS = #{item.pointStatus,jdbcType=VARCHAR},
+                </if>
+                <if test="item.modifyTime != null">
+                    MODIFY_TIME = #{item.modifyTime,jdbcType = TIMESTAMP}
+                </if>
+            </trim>
+            where 1 = 1
+            <if test="item.orgId != null and item.orgId !=''">
+                and ID = #{item.orgId,jdbcType=VARCHAR}
+            </if>
+        </foreach>
+    </update>
+
+    <select id="selectBasicById" parameterType="java.lang.String" resultType="com.huanghe.alarm.api.model.AlarmDefinition">
+        select <include refid="common"/> from ALARM_BASIC where ID=#{id}
+    </select>
+
+    <select id="selectByCondiction" resultMap="BaseResultMap">
+        select MODIFY_TIME,ALARM_NAME,DEVICE_NAME,PLANT_NAME,POINT_STATUS,ALARM_TAG from ALARM_BASIC
+        where POINT_STATUS =  #{pointStatus}
+        <if test="alarmDefinition.alarmLevel!=null and alarmDefinition.alarmLevel!='' ">and ALARM_LEVEL = #{alarmDefinition.alarmLevel,jdbcType=VARCHAR}</if>
+        <if test="alarmDefinition.plantName!=null and alarmDefinition.plantName!='' ">and PLANT_NAME = #{alarmDefinition.plantName,jdbcType=VARCHAR}</if>
+        <if test="alarmDefinition.alarmClass!=null and alarmDefinition.alarmClass!='' ">and ALARM_CLASS = #{alarmDefinition.alarmClass,jdbcType=VARCHAR}</if>
+    </select>
+
+    <select id="selectDataById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select ALARM_NAME,GLOBAL_NUMBER,DEVICE_PATH,DESCRIPT,DEVICE_NAME,PLANT_NAME,SIGN_TYPE,ALARM_CODE,ALARM_LEVEL,ALARM_CLASS,ALARM_COLOR,POINT_STATUS,EFFECTIVENESS,CREATE_TIME,MODIFY_TIME
+        from ALARM_BASIC where ID = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="queryByCondition"  resultType="com.huanghe.alarm.api.model.AlarmDefinition">
+        select <include refid="common"/> FROM ALARM_BASIC WHERE 1=1
+        <if test="entity.alarmClass !=null and entity.alarmClass !=''">
+            AND ALARM_CLASS=#{entity.alarmClass}
+        </if>
+        <if test="entity.plantType !=null and entity.plantType !=''">
+            AND PLANT_TYPE=#{entity.plantType}
+        </if>
+        <if test="entity.plantName !=null and entity.plantName !=''">
+            AND PLANT_NAME LIKE CONCAT(#{entity.plantName},'%')
+        </if>
+        <if test="entity.alarmName !=null and entity.alarmName !=''">
+            AND ALARM_NAME LIKE CONCAT(#{entity.alarmName},'%')
+        </if>
+    </select>
+
+    <!--有问题-->
+    <insert id="addAlarm">
+        INSERT INTO ALARM_BASIC ("ORGID", "ALARMNAME", "GLOBALCODE", "DEVICEPATH", "DEVICENAME", "PLANTNAME", "SIGNALTYPE", "ALARMCODE", "ALARMLEVEL", "ALARMCLASS", "ALARMCOLOR", "POINTSTATUS", "EFFECTIVENESS", "CREATETIME") VALUES ();
+    </insert>
+
+    <update id="editAlarm">
+       update ALARM_BASIC
+       <set>
+           <if test="alarm.alarmName !=null and alarm.alarmName!=''">
+               ALARM_NAME=#{alarm.alarmName},
+           </if>
+           <if test="alarm.globalCode !=null and alarm.globalCode!=''">
+               GLOBAL_NUMBER=#{alarm.globalCode},
+           </if>
+           <if test="alarm.plantName !=null and alarm.plantName!=''">
+               PLANT_NAME=#{alarm.plantName},
+           </if>
+           <if test="alarm.signalType !=null and alarm.signalType!=''">
+               SIGN_TYPE=#{alarm.signalType},
+           </if>
+           <if test="alarm.deviceName !=null and alarm.deviceName!=''">
+               DEVICE_NAME=#{alarm.deviceName},
+           </if>
+           <if test="alarm.alarmCode !=null and alarm.alarmCode!=''">
+               ALARM_CODE=#{alarm.alarmCode},
+           </if>
+           <if test="alarm.alarmClass !=null and alarm.alarmClass!=''">
+               ALARM_CLASS=#{alarm.alarmClass},
+           </if>
+           <if test="alarm.alarmColor !=null and alarm.alarmColor!=''">
+               ALARM_COLOR=#{alarm.alarmColor},
+           </if>
+           <if test="alarm.effectiveness !=null and alarm.effectiveness!=''">
+               EFFECTIVENESS=#{alarm.effectiveness},
+           </if>
+           <if test="alarm.modifyTime !=null">
+               MODIFY_TIME=#{alarm.modifyTime}
+           </if>
+       </set>
+        WHERE ID=#{alarm.orgId}
+    </update>
+
+    <delete id="delAlarm" parameterType="java.util.List">
+        DELETE  FROM ALARM_BASIC WHERE
+        ID in
+        <foreach collection="list"  item="item" open="(" separator="," close=")"  >
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="getAllPantName" resultType="java.lang.String">
+        select distinct(t.plant_name) from ALARM_BASIC t
+    </select>
+
+</mapper>

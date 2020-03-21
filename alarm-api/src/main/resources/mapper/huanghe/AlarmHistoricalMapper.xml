@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huanghe.alarm.api.mapper.huanghe.AlarmHistoricalMapper">
+
+    <resultMap id="BaseResultMap" type="com.huanghe.alarm.api.model.AlarmHistorical">
+        <id column="ORG_ID" jdbcType="VARCHAR" property="orgId"/>
+        <result column="ALARM_CODE" jdbcType="VARCHAR" property="alarmCode"/>
+        <result column="ALARM_NAME" jdbcType="VARCHAR" property="alarmName"/>
+        <result column="DEVICE_NAME" jdbcType="VARCHAR" property="deviceName"/>
+        <result column="ALARM_CLASS" jdbcType="VARCHAR" property="alarmClass"/>
+        <result column="ALARM_LEVEL" jdbcType="VARCHAR" property="alarmLevel"/>
+        <result column="PLANT_NAME" jdbcType="VARCHAR" property="plantName"/>
+        <result column="ALARM_ACTIVE" jdbcType="VARCHAR" property="alarmActive"/>
+        <result column="ACT_CH_TIME" jdbcType="TIMESTAMP" property="actChTime"/>
+        <result column="START_TIME" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="END_TIME" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="SIGN_TYPE" jdbcType="VARCHAR" property="signType"/>
+    </resultMap>
+
+    <select id="selectPreData" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select ORG_ID,ALARM_CODE,ALARM_NAME,DEVICE_NAME,ALARM_CLASS,PLANT_NAME,ALARM_ACTIVE,ACT_CH_TIME,SIGN_TYPE
+        from ALARM_HISTORICAL
+        where ORG_ID = #{orgId,jdbcType=VARCHAR} and ACT_CH_TIME = (select max(ACT_CH_TIME) from ALARM_HISTORICAL WHERE ORG_ID = #{orgId,jdbcType=VARCHAR})
+    </select>
+
+    <select id="selectPrePointStatus" resultType="java.lang.String">
+        SELECT ALARM_ACTIVE FROM ALARM_HISTORICAL WHERE ORG_ID = #{orgId} AND ACT_CH_TIME = (SELECT MAX(ACT_CH_TIME) FROM ALARM_HISTORICAL WHERE ORG_ID=#{orgId})
+    </select>
+
+    <insert id="batchInsertHistory" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="historyList" item="item" index="index">
+            INTO ALARM_HISTORICAL
+            (ALARM_CODE, ALARM_NAME, DEVICE_NAME,PLANT_NAME, ALARM_ACTIVE,SIGN_TYPE,ORG_ID,ACT_CH_TIME,ALARM_CLASS)
+            VALUES
+            (#{item.alarmCode}, #{item.alarmName}, #{item.deviceName}, #{item.plantName}, #{item.alarmActive}, #{item.signType}, #{item.orgId},#{item.actChTime},#{item.alarmClass})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+
+    <select id="getAlarmHistoricalByCondition" resultMap="BaseResultMap">
+        select ACT_CH_TIME,ALARM_NAME,ALARM_CLASS,DEVICE_NAME,PLANT_NAME,ALARM_ACTIVE from ALARM_HISTORICAL
+        where 1 = 1
+        <if test="alarmHistorical.plantName!=null and alarmHistorical.plantName!=''"> and PLANT_NAME = #{alarmHistorical.plantName}</if>
+        <if test="alarmHistorical.alarmName!=null and alarmHistorical.alarmName!=''"> and ALARM_NAME = #{alarmHistorical.alarmName}</if>
+        <if test="alarmHistorical.deviceName!=null and alarmHistorical.deviceName!=''"> and DEVICE_NAME = #{alarmHistorical.deviceName}</if>
+        <if test="alarmHistorical.alarmClass!=null and alarmHistorical.alarmClass!=''"> and ALARM_CLASS = #{alarmHistorical.alarmClass}</if>
+        <if test="alarmHistorical.startTime!=null ">and <![CDATA[ACT_CH_TIME >= #{alarmHistorical.startTime,jdbcType=TIMESTAMP}]]> </if>
+        <if test="alarmHistorical.endTime!=null ">and <![CDATA[ACT_CH_TIME <= #{alarmHistorical.endTime,jdbcType=TIMESTAMP}]]></if>
+    </select>
+
+</mapper>
